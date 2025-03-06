@@ -6,7 +6,9 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
@@ -39,15 +41,32 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        //setContentView(R.layout.activity_main);
         sharedPreferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
         sound = getSoundPreference();
-//        CustomUnityActivity.getInstance().handlePlayAction(this, "play", sound);
-        showFragment(new UnityViewFragment());
+        CustomUnityActivity.getInstance().handlePlayAction(this, "play", sound);
+       // showFragment(new UnityViewFragment());
+
+
+        ReciverMessageFromUnity.callbackManager = new CallbackManager();
+        ReciverMessageFromUnity.callbackManager.SetActivity(ac -> {
+
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+
+
+            LayoutInflater inflater = getLayoutInflater();
+            View rootView = inflater.inflate(R.layout.activity_main, null);
+
+            ac.addContentView(rootView, params);
+            loadBanner(ac);
+        });
 
         loadInterReciverItem();
         setupUnityCallback();
-        loadBanner();
+       // loadBanner();
     }
 
     private void showFragment(Fragment fragment) {
@@ -80,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
         }));
     }
     private void setupUnityCallback() {
-        ReciverMessageFromUnity.callbackManager = new CallbackManager();
 
         ReciverMessageFromUnity.callbackManager.setCallback(message -> {
             switch (message) {
@@ -142,8 +160,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void loadBanner() {
+
+    private void loadBanner(Activity ac) {
         try {
+            runOnUiThread(() ->
+                    Admob.getInstance().loadCollapsibleBanner(ac, getString(R.string.banner_collab), "bottom")
+
+            );
+            Log.d("Banner", "Loading banner for HomeScene");
+        } catch (Exception e) {
+            Log.e("Banner", "Error loading banner", e);
+        }
+    }
+
+    private void loadBanner() {
+        /*try {
             runOnUiThread(() ->
                     Admob.getInstance().loadCollapsibleBanner(this, getString(R.string.banner_collab), "bottom")
 
@@ -151,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d("Banner", "Loading banner for HomeScene");
         } catch (Exception e) {
             Log.e("Banner", "Error loading banner", e);
-        }
+        }*/
     }
 
 }
